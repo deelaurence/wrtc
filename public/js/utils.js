@@ -1,6 +1,6 @@
 export class Helper{
 
-    name="sy"||prompt('Enter name')
+    name=prompt('Enter name')
     nameToDisplay;
     roomParticipants=[];
     usernamesAlreadyInDom = [];
