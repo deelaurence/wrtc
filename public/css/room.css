@@ -1,15 +1,15 @@
-  *{
+
+
+
+
+*{
     /* max-height: 80vh !important; */
-    /* border: 2px solid red !important; */
-    transition: .5 ease-in-out !important;
+    /* border: 1px solid red !important; */
+    /* transition: .5 ease-in-out !important; */
   }
 
-  textarea,
-  input[type="text"],
-  input[type="button"],
-  input[type="submit"] {
-       -webkit-appearance: none;
-       border-radius: 0;
+  video{
+    transform: rotateY(180deg);
   }
 
   .bgTransparent{
@@ -47,10 +47,13 @@
     background: #031630;
   }
   .show-sidebar{
-    position:absolute;
+    position:fixed;
+    display: block;
     top:0;
-    height:85%;
-    width: 95%;
+    left: 0;
+    z-index: 10000000 !important;
+    height:100svh;
+    width: 100%;
     background: white;
     
 

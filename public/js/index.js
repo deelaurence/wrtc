@@ -9,6 +9,7 @@ const openChatBtn = document.getElementById('open-chat-btn')
 const closeChatBtn = document.getElementById('close-chat-bar')
 const invitePopup = document.getElementById('invite-popup')
 helper.printName();
+helper.setNameInLocalStorage()
 openChatBtn.addEventListener('click', function(){
   helper.showChatbar()
 })
@@ -43,6 +44,11 @@ inviteButton.addEventListener('click',()=>{
   invitePopup.classList.remove('hidden')
 })
 
+
+
+
+
+
 endCallBtn.addEventListener('click',()=>{
   window.location.href='/'
 })
@@ -76,9 +82,20 @@ socket.on('user-joined-room', ({ newUser,username,allUsers,prevMessages }) => {
 
   helper.printRoomParticipant(); 
   helper.printMeetingDetails();
+  const localVideoButton = document.querySelector('#userVideoBtn0')
+  const localAudioButton = document.querySelector('#userAudioBtn0')
+  localVideoButton.addEventListener('click',()=>{
+    helper.toggleVideo(localVideoButton)
+  })
+  localAudioButton.addEventListener('click',()=>{
+    helper.toggleAudio(localAudioButton)
+  })
+
+
   
   if(prevMessages&&prevMessages.length>0){
     helper.printPrevMessages(prevMessages)
+    
   }
   else{
     const placeholder = [{message:"You can start a chat",username:"Admin"}]
@@ -87,6 +104,7 @@ socket.on('user-joined-room', ({ newUser,username,allUsers,prevMessages }) => {
 
 
 });
+
 
 sendMessageBtn.addEventListener("click", ()=>{
   socket.emit('send-message', { 
@@ -120,6 +138,7 @@ async function startStream() {
   try {
     localStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
     localVideo.srcObject = localStream;
+    helper.localStream = localStream;
   } catch (error) {
     console.error('Error accessing media devices.', error);
   }

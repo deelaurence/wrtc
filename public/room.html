@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>WebRTC Video Call Interface</title>
+  <title>Callify</title>
   <link rel="stylesheet" href="./css/room.css">
   <script src="https://cdn.tailwindcss.com"></script>
 </head>
@@ -14,8 +14,8 @@
 
   <div 
   id="invite-popup"
-  class="bgTransparent flex justify-center items-center w-full h-screen superZ fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2" id="invite-popup">
-    <div class="relative h-1/2 sm:h-2/3 myBlue pt-12 text-sm w-3/4 md:w-1/2 flex flex-col justify-around rounded-md dig2 p-6 sm:p-24">
+  class="bgTransparent hidden flex justify-center items-center w-full h-screen superZ fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2" id="invite-popup">
+    <div class="relative h-1/2 sm:h-2/3 myBlue pt-12 text-sm w-5/6 md:w-1/2 flex flex-col justify-around rounded-xl dig2 p-6 sm:p-24">
         <p 
         id="close-button"
         class="text-gray-300 cursor-pointer p-2 underline absolute top-4 right-6">close</p>
@@ -24,7 +24,7 @@
         <p class="text-xl text-gray-600 font-semibold">Call<span class="font-thin">ify</span></p>
       </div>
       
-      <h3 class="text-xl text-gray-200 ">Share this meeting link to invite participants</h3>
+      <h3 class="text-lg sm:text-xl text-gray-400 ">Share this meeting link to invite participants</h3>
       
       <div class="flex  justify-between bg-white  rounded ">
         <p id="invite-link" 
@@ -32,7 +32,7 @@
         class="pl-2 pr-1 py-2 overflow-x-auto"></p>
         <!-- Copy button -->
         <button  
-        class="cursor-auto text-white bg-blue-500 w-16 flex items-center justify-center  py-2"
+        class="cursor-auto text-white bg-blue-500 w-16 flex shadow-md items-center justify-center px-2 py-2"
         >
         <img
         id="copy-button"
@@ -86,11 +86,11 @@
         
         <!-- Main Video Display Area -->
         <div  id="main-video-container" class="relative w-full bg-gray-200 shadow-md h-full max-h-[60vh] mb-4">
-          <video src="./media/loader.mp4" id="remoteVideo" class="w-full h-full object-cover rounded-md border" autoplay loop playsinline webkit-playsinline></video>
+          <video src="./media/loader.mp4" id="remoteVideo" class="w-full h-full object-cover rounded-md border" muted autoplay loop playsinline webkit-playsinline></video>
           <span class="absolute bottom-2 left-2 bg-gray-700 text-white text-xs px-2 py-1 rounded-md">Remote User</span>
           <!-- Local Video (Thumbnail) -->
           <div id="localVideoContainer" class="smaller-video absolute top-0 right-0 w-24 h-24">
-            <video id="localVideo" class="w-full h-full object-cover rounded-md border" autoplay muted playsinline webkit-playsinline></video>
+            <video id="localVideo" class="w-full h-full object-cover rounded-md border" autoplay  playsinline webkit-playsinline></video>
           </div>
         </div>
         <p class="name hidden"></p>
@@ -98,7 +98,8 @@
 
         <!-- Call Control Buttons -->
         <div class="flex mt-4 w-full justify-around dig p-2 gap-6 ">
-          <button id="open-chat-btn" class=" p-4  flex md:hidden flex-col items-center justify-center rounded">
+          <button id="open-chat-btn" class=" p-4 relative flex md:hidden flex-col items-center justify-center rounded">
+            <p id="msg-notification" class="bg-red-600 absolute text-white p-1 rounded-full flex items-center justify-center text-xs h-4 w-4 top-2 right-2">1</p>
             <img class="h-6" src="https://cdn-icons-png.flaticon.com/128/190/190409.png" alt="end call">
             <p class="text-xs">Chat</p>
           </button>
@@ -128,18 +129,18 @@
         <!-- Chat Section -->
       <section 
       id="chatbar"
-      class="md:block p-4 " >
-        <div class="flex justify-between items-center mb-4">
+      class="hidden md:block p-4" >
+        <div class="flex justify-between  items-center mb-4">
           <h2 class="text-lg font-semibold pt-4">Chat</h2>
           <img id="close-chat-bar" class="h-6 hidden  md:hidden" src="https://cdn-icons-png.flaticon.com/128/1828/1828615.png" alt="">
         </div>
-        <section class="relative">
+        <section class="relative ">
           <div class="absolute bg-gradient z-10 top-0 w-full h-12"></div>
           <div class="absolute bg-gradient-bottom z-10 bottom-0 w-full h-12"></div>
 
-          <div id="messages-super-container" class="flex-1 space-y-2 mb-12 overflow-y-scroll h-72  md:h-64 relative">
+          <div id="messages-super-container" class="flex-1 space-y-2 mb-12 overflow-y-scroll h-screen  md:h-64 relative">
             <!-- Sample chat messages (dynamically added messages should be appended here) -->
-            <div id="messages-container" class="mb-32  flex items-start flex-col" >
+            <div id="messages-container" class="mb-72 sm:mb-6  gap-2 flex items-start flex-col" >
               
             </div>
             
@@ -149,9 +150,10 @@
 
         <!-- Message Input -->
         <div
-        style="border-radius: 120px;"
-        class="flex items-center bg-gray-100 space-x-2">
+        style="border-radius: 120px; width: 91%;"
+        class="bg-black opacity-80 flex  border md:w-auto fixed z-20 md:static  bottom-12 items-center bg-gray-100 space-x-2">
           <input 
+          required
           style="border-radius: 120px;"
           id="enter-message" type="text" placeholder="Type a message..." class="bg-gray-100 flex-1 px-4 py-2   focus:outline-none">
           <button id="send-message" class="text-blue-500 pr-3"><img src="https://cdn-icons-png.flaticon.com/128/9333/9333991.png" class="h-6" alt=""></button>

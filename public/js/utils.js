@@ -1,10 +1,49 @@
 export class Helper{
+    nameInLocalStorage = localStorage.getItem("name")
+    
+    
+    name=this.nameInLocalStorage||prompt('Enter name')
 
-    name=prompt('Enter name')
     nameToDisplay;
     roomParticipants=[];
     usernamesAlreadyInDom = [];
+
+    localStream;
+
+
+    toggleVideo(button) {
+        
+        const localStream=this.localStream
+        if (localStream) {
+            const videoTrack = localStream.getVideoTracks()[0];
+          if (videoTrack) {
+            videoTrack.enabled = !videoTrack.enabled;
+            button.src = !videoTrack.enabled ? "https://cdn-icons-png.flaticon.com/128/16747/16747998.png" 
+            : "https://cdn-icons-png.flaticon.com/128/5346/5346453.png";
+          }
+        }
+      }
+      
+      // Toggle audio track
+      toggleAudio(button) {
+        const localStream=this.localStream
+        if (localStream) {
+          const audioTrack = localStream.getAudioTracks()[0];
+          if (audioTrack) {
+            audioTrack.enabled = !audioTrack.enabled;
+            button.src = !audioTrack.enabled ? "https://cdn-icons-png.flaticon.com/128/9035/9035397.png" 
+            : "https://cdn-icons-png.flaticon.com/128/880/880564.png";
+            // document.getElementById("toggleAudioButton").innerText = audioTrack.enabled ? "Mute Audio" : "Unmute Audio";
+          }
+        }
+      }
+
+
     
+    // Set name in local storage
+    setNameInLocalStorage(){
+        localStorage.setItem("name", this.name)
+    }
 
     copyText(text) {
         // Get the invite link text
@@ -37,7 +76,7 @@ export class Helper{
         if(usernames&&usernames.length){
             document.querySelector('#participants-count').textContent=usernames.length
         }
-        usernames.forEach(participant => {
+        usernames.forEach((participant,index) => {
             // Check if the username has already been appended
             if (!usernamesAlreadyInDom.includes(participant)) {
                if (participant===this.name){
@@ -52,8 +91,8 @@ export class Helper{
                 <div class="flex gap-12 items-center justify-between text-sm bg-gray-100 px-4 py-2 rounded-lg">
                     <p class="font-semibold capitalize">${this.nameToDisplay}</p>
                     <div class='flex gap-2' > 
-                        <img class="h-4 opacity-40" src="https://cdn-icons-png.flaticon.com/128/5107/5107435.png"/>
-                        <img class="h-4 opacity-30" src="https://cdn-icons-png.flaticon.com/128/880/880564.png"/>
+                        <img id="userVideoBtn${index}" class="h-4 " src="https://cdn-icons-png.flaticon.com/128/5107/5107435.png"/>
+                        <img id="userAudioBtn${index}" class="h-4 " src="https://cdn-icons-png.flaticon.com/128/880/880564.png"/>
                         <img class="h-4 opacity-30" src="https://cdn-icons-png.flaticon.com/128/109/109190.png"/>
                     </div>               
                     </div>
@@ -66,42 +105,36 @@ export class Helper{
         });
     }
     
-    printPrevMessages(data){
-        const messagesContainer = document.getElementById("messages-container")
-        data.forEach(({message,username}) => {
-            messagesContainer.innerHTML += `
-            <div class="flex items-center gap-2">  
-                <div class="w-6 h-6 flex items-center font-semibold justify-center bg-gray-300 rounded-full">${username.substring(0,1).toUpperCase()}</div>
-                <div class="">
+    messagesComponent = (username,message)=>{
+        return `<div class="flex items-center gap-2">  
+                <div class="w-6 h-6 p-1  items-center font-semibold justify-center bg-gray-300 rounded-full">${username.substring(0,1).toUpperCase()}</div>
+                <div >
                     <p class="text-xs text-gray-400 pb-1">${username}</p>
                     <p class="text-xs bg-gray-100 px-4 py-1 rounded-lg">${message}</p>
                 </div>
-              </div>
-            `;
+              </div>`
+    }
+
+    printPrevMessages(data){
+        const messagesContainer = document.getElementById("messages-container")
+        data.forEach(({message,username}) => {
+            messagesContainer.innerHTML += this.messagesComponent(username,message);
           });
+        this.printChatMessageCount(data)
     }
     printMessages(data){
-
+        
         const messagesContainer = document.getElementById("messages-container");
         const messagesSuperContainer = document.getElementById("messages-super-container");
-
+        
         messagesContainer.innerHTML = ""; 
         data.forEach(({ message, username }) => {
-            messagesContainer.insertAdjacentHTML("beforeend", `
-              <div class="flex items-center gap-2">  
-                <div class="w-6 h-6 flex items-center font-semibold justify-center bg-gray-300 rounded-full">
-                  ${username.substring(0, 1).toUpperCase()}
-                </div>
-                <div>
-                  <p class="text-xs text-gray-400 pb-1">${username}</p>
-                  <p class="text-xs bg-gray-100 px-4 py-1 rounded-lg">${message}</p>
-                </div>
-              </div>
-            `);
-          });
-
-          messagesSuperContainer.scrollTop = messagesSuperContainer.scrollHeight;
-
+            messagesContainer.insertAdjacentHTML("beforeend",this.messagesComponent(username,message));
+        });
+        
+        messagesSuperContainer.scrollTop = messagesSuperContainer.scrollHeight;
+        this.printChatMessageCount(data)
+        
     }
 
     printMeetingDetails(){
@@ -127,20 +160,28 @@ export class Helper{
     getUrlParams(paramName){
         let searchParams = new URLSearchParams(window.location.search);
         let paramValue=searchParams.get(paramName)
-        return paramValue;
+        return paramValue.toLowerCase();
     }
 
+
+    printChatMessageCount = (messages)=>{
+        const msgNotification = document.querySelector('#msg-notification')
+        msgNotification.textContent=messages.length
+    }
 
     showChatbar(){
         const chatbar = document.querySelector('#chatbar');
         chatbar.classList.add('show-sidebar')
         document.getElementById('close-chat-bar').style.display="block"
+        chatbar.classList.remove('hidden')
         
     }
     hideChatbar(){
         document.getElementById('close-chat-bar').style.display="none"
         const chatbar = document.querySelector('#chatbar');
+        chatbar.classList.add('hidden')
         chatbar.classList.remove('show-sidebar')
+        
     }
 }
 
@@ -151,7 +192,14 @@ export class Helper{
  const smallerVideo = document.querySelector(".smaller-video")
  const mainVideoContainer = document.querySelector("#main-video-container")
  
-
+// JavaScript to play video on load
+window.addEventListener("load", function() {
+    
+    // Try to play the video once it's loaded
+    remoteVideo.play().catch(error => {
+      console.error("Autoplay prevented:", error);
+    });
+  });
  
  // Swap sizes between local and remote video when local video is clicked
  mainVideoContainer.addEventListener("click", () => {
@@ -172,3 +220,17 @@ export class Helper{
      remoteVideo.classList.remove("w-24", "h-24", "absolute", "top-0", "right-0");
    }
  });
+
+
+
+function updateVh() {
+    // Calculate 1vh in pixels
+    let vh = window.innerHeight * 0.01;
+    // Set the value in a CSS variable
+    document.documentElement.style.setProperty('--vh', `${vh}px`);
+  }
+  
+  // Run the function initially and on resize
+window.addEventListener('resize', updateVh);
+// updateVh();
+  
