@@ -1,0 +1,98 @@
+  *{
+    /* max-height: 80vh !important; */
+    /* border: 2px solid red !important; */
+    transition: .5 ease-in-out !important;
+  }
+  .bgTransparent{
+    background-color: #03163063;
+  }
+
+  .superZ{
+    z-index: 10000 !important;
+  }
+  body {
+    background-color: #fff;
+    position: relative;
+  }
+
+  /* Adding the grainy overlay */
+  body::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none; /* To prevent interference with content */
+    background-image: radial-gradient(rgba(0, 0, 0, .1) 1px, transparent 1px);
+    background-size: 3px 3px; /* Adjust pixel size for grain density */
+    opacity: 0.2; /* Adjust for grain visibility */
+    z-index: 0;
+  }
+
+
+  .myGreen{
+    background-color: #32ac96;
+  }
+  .myBlue{
+    background: #031630;
+  }
+  .show-sidebar{
+    position:absolute;
+    top:0;
+    height:85%;
+    width: 95%;
+    background: white;
+    
+
+  }
+
+::-webkit-scrollbar {
+  width: 2px; /* Change width to make it thinner */
+}
+
+::-webkit-scrollbar-track {
+  background: #f1f1f1; /* Track color */
+}
+
+::-webkit-scrollbar-thumb {
+  background-color: #888; /* Scrollbar color */
+  border-radius: 10px; /* Rounded corners */
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #555; /* Scrollbar color on hover */
+}
+
+/* Firefox-specific scrollbar styling */
+* {
+  scrollbar-width:thin; /* Makes the scrollbar thin in Firefox */
+  scrollbar-color:   #c7c7c7 #6d6d6d27 ; /* Scrollbar color and track color */
+}
+
+.bg-gradient{
+  background: linear-gradient(to bottom, white, transparent 90%);
+}
+.bg-gradient-bottom{
+  background: linear-gradient(to top, white, transparent 90%);
+}
+
+.dig{
+  border-radius: 39px;
+background: #ffffff;
+box-shadow:  -8px 8px 16px #f0f0f0,
+             8px -8px 16px #ffffff;
+}
+
+.dig2{
+  border-radius: 39px;
+/* background: #ffffff; */
+box-shadow:  -8px 8px 16px #1212125d,
+             8px -8px 16px #0f0e0e71;
+}
+.dig3{
+/* background: #ffffff; */
+box-shadow:  -4px 4px 8px #12121224,
+}
+
+

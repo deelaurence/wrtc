@@ -1,11 +1,11 @@
-const express = require('express');
-const cors = require('cors');
-const http = require('http');
-const { Server } = require('socket.io');
+'use strict';
 
-const { instrument } = require("@socket.io/admin-ui");
-
-
+import express from 'express';
+import cors from 'cors';
+import http from 'http';
+import { Server } from 'socket.io';
+import { instrument } from '@socket.io/admin-ui';
+import { MessagesCache } from './utils/messagesCache.js';
 
 
 const app = express();
@@ -27,9 +27,9 @@ const server = http.createServer(app);
   //   credentials: true
   // }
 // });
+const messageCacheInstance = new MessagesCache()
 
-
-const io = require("socket.io")(server, {
+const io = new Server(server, {
   cors: {
     origin: ["https://admin.socket.io"], // The Socket.io admin UI
     credentials: true,
@@ -43,23 +43,65 @@ instrument(io, {
 
 
 // Serve static files for frontend
-app.use(express.static('public'));
+app.use(express.static('public',{
+  index:"home.html"
+}));
 
 io.on('connection', (socket) => {
   console.log('A user connected');
 
   socket.on('join-room', ({ roomId, username }) => {
-    socket.join(roomId);
-    socket.roomId = roomId;
-    socket.username = username;
-
-    const participants = Array.from(io.sockets.adapter.rooms.get(roomId) || []).map(socketId => {
-      const participantSocket = io.sockets.sockets.get(socketId);
-      return { id: participantSocket.id, username: participantSocket.username };
-    });
     
-    io.to(roomId).emit('user-joined-room', { newUser: socket.id, allUsers: participants });
+    function getUsersInRoom(roomId){
+      const participants = Array.from(io.sockets.adapter.rooms.get(roomId) || []).map(socketId => {
+        const participantSocket = io.sockets.sockets.get(socketId);
+        return { id: participantSocket.id, username: participantSocket.username };
+      });
+      return participants;
+    }
+
+    const prevMessages=messageCacheInstance.getMessages(roomId)
+    const roomParticipants = messageCacheInstance.getRoomUsers(roomId)
+    
+    const participants = getUsersInRoom(roomId)
+
+    //room paricipants from cache [remains in cache until next server reload or intentionally clear]
+    // console.log(roomParticipants)
+
+    //room participants from socket.io [when browser client reloads, it refreshes]
+    // console.log(participants)
+    let usernamesExisting = participants?.map((participant)=>{
+      return participant.username
+    })
+    let userExists = usernamesExisting.includes(username)
+
+    console.log(`${participants.length} people in room ${roomId}`)
+    if(userExists){
+      socket.emit('user-exist')
+    }
+    //if participant are now two
+    else if(participants.length===2){
+      socket.emit('room-full')
+    }
+    else{
+      socket.join(roomId);
+      messageCacheInstance.setRoomUsers(roomId,username)
+      socket.roomId = roomId;
+      socket.username = username;
+      io.to(roomId).emit('user-joined-room', { newUser: socket.id, username, allUsers: getUsersInRoom(roomId), prevMessages });
+    }
   });
+
+  socket.on('send-message',({message,username})=>{
+    // console.log(data)
+    messageCacheInstance.setMessages(
+      socket.roomId,
+      {message,username}
+    )
+    const prevMessages=messageCacheInstance.getMessages(socket.roomId)
+    io.to(socket.roomId).emit('receive-message',prevMessages)
+  })
+
 
   socket.on('offer', (data) => {
     const roomId = socket.roomId;

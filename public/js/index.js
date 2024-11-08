@@ -3,9 +3,18 @@ import { Helper } from './utils.js';
 const helper = new Helper();
 const roomId = helper.getUrlParams('roomId');
 const username = helper.name;
-
+const sendMessageBtn = document.getElementById('send-message')
+const enterMessage = document.getElementById('enter-message')
+const openChatBtn = document.getElementById('open-chat-btn')
+const closeChatBtn = document.getElementById('close-chat-bar')
+const invitePopup = document.getElementById('invite-popup')
 helper.printName();
-
+openChatBtn.addEventListener('click', function(){
+  helper.showChatbar()
+})
+closeChatBtn.addEventListener('click', function(){
+  helper.hideChatbar()
+})
 // Prevent fullscreen
 document.addEventListener("fullscreenchange", () => {
     if (document.fullscreenElement) {
@@ -17,16 +26,94 @@ const socket = io();
 const localVideo = document.getElementById('localVideo');
 const remoteVideo = document.getElementById('remoteVideo');
 const startCallBtn = document.getElementById('startCallBtn');
+const endCallBtn = document.getElementById('endCallBtn');
 let localStream;
 let peerConnection;
 const configuration = { iceServers: [{ urls: 'stun:stun.l.google.com:19302' }] };
+const copyBtn = document.querySelector('#copy-button');
+const inviteLink = document.querySelector('#invite-link');
+const inviteButton = document.querySelector('#invite-button');
+const closeButton = document.querySelector('#close-button');
+inviteLink.textContent=window.location.href
+
+closeButton.addEventListener('click',()=>{
+  invitePopup.classList.add('hidden')
+})
+inviteButton.addEventListener('click',()=>{
+  invitePopup.classList.remove('hidden')
+})
+
+endCallBtn.addEventListener('click',()=>{
+  window.location.href='/'
+})
+
+
+const copyInviteLink=(e)=>{
+  e.srcElement.src="https://cdn-icons-png.flaticon.com/128/5291/5291043.png"
+  helper.copyText(inviteLink.textContent) 
+
+
+  setTimeout(() => {
+      e.srcElement.src="https://cdn-icons-png.flaticon.com/128/1621/1621635.png"
+  }, 3000);
+}
+copyBtn.addEventListener('click', copyInviteLink)
+
 
 socket.emit('join-room', { roomId, username });
 
-socket.on('user-joined-room', ({ newUser, allUsers }) => {
+socket.on('user-exist',()=>{
+  window.location.href="/home.html"
+  return alert("Username already exist in room")
+})
+socket.on('room-full',()=>{
+  window.location.href="/home.html"
+  return alert("Sorry, the room already has two users")
+})
+
+socket.on('user-joined-room', ({ newUser,username,allUsers,prevMessages }) => {
   helper.roomParticipants = allUsers;
-  helper.printRoomParticipant();
+
+  helper.printRoomParticipant(); 
+  helper.printMeetingDetails();
+  
+  if(prevMessages&&prevMessages.length>0){
+    helper.printPrevMessages(prevMessages)
+  }
+  else{
+    const placeholder = [{message:"You can start a chat",username:"Admin"}]
+    helper.printPrevMessages(placeholder) 
+  }
+
+
 });
+
+sendMessageBtn.addEventListener("click", ()=>{
+  socket.emit('send-message', { 
+    message:enterMessage.value, 
+    roomId,username:helper.name
+  });
+})
+enterMessage.addEventListener('keydown', function(event) {
+  if(event.key==='Enter'){
+    event.preventDefault();
+    socket.emit('send-message', { 
+      message:enterMessage.value, 
+      roomId,username:helper.name
+    });
+  }
+});
+
+
+
+
+
+socket.on('receive-message', (data)=>{
+  helper.printMessages(data)
+  enterMessage.value=''
+})
+
+// helper.printPrevMessages(data)
 
 // Request camera and microphone access
 async function startStream() {
