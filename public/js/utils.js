@@ -9,20 +9,26 @@ export class Helper{
     usernamesAlreadyInDom = [];
 
     localStream;
-
+    videoTrack=true;
 
     toggleVideo(button) {
         
         const localStream=this.localStream
         if (localStream) {
-            const videoTrack = localStream.getVideoTracks()[0];
-          if (videoTrack) {
-            videoTrack.enabled = !videoTrack.enabled;
-            button.src = !videoTrack.enabled ? "https://cdn-icons-png.flaticon.com/128/16747/16747998.png" 
-            : "https://cdn-icons-png.flaticon.com/128/5346/5346453.png";
-          }
+        console.log(this.videoTrack)
+        let videoTrack = localStream.getVideoTracks()[0];
+        
+        if (this.videoTrack) {
+            videoTrack.stop()
+            videoTrack = null;
+            this.videoTrack=false
+            button.src ="https://cdn-icons-png.flaticon.com/128/16747/16747998.png" 
+        } else {
+            location.reload()
+
         }
-      }
+        
+      }}
       
       // Toggle audio track
       toggleAudio(button) {
